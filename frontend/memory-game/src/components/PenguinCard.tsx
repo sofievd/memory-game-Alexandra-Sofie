@@ -9,7 +9,6 @@ import penguin_1_3 from '../assets/penguin_1_3.png'
 
 type PenguinCardProps = {
   value: number
-  index: number
   isMatched: boolean
   isSelected: boolean
   disabled: boolean
@@ -27,16 +26,16 @@ const penguinImages = {
   8: penguin_1_3,
 } as const
 
-export function PenguinCard({ value, index, isMatched, isSelected, disabled, onClick }: PenguinCardProps) {
+export function PenguinCard({ value, isMatched, isSelected, disabled, onClick }: PenguinCardProps) {
   const showFace = isMatched || isSelected
 
   return (
     <button
-      className={`card ${showFace ? 'card--open' : ''} ${isMatched ? 'card--matched' : ''}`}
+      className={`card w-full p-1 ${showFace ? 'card--open' : ''} ${isMatched ? 'card--matched' : ''}`}
       onClick={onClick}
       disabled={disabled}
     >
-      <span className="card__label">{index + 1}</span>
+      {/*<span className="card__label">{index + 1}</span>*/}
       <span className="card__face">
         {showFace ? <img src={penguinImages[value as keyof typeof penguinImages]} alt={`Penguin ${value}`} /> : '❓'}
       </span>
