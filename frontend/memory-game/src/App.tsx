@@ -1,44 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
-import penguin_0_0 from './assets/penguin_0_0.png'
-import penguin_0_1 from './assets/penguin_0_1.png'
-import penguin_0_2 from './assets/penguin_0_2.png'
-import penguin_0_3 from './assets/penguin_0_3.png'
-import penguin_1_0 from './assets/penguin_1_0.png'
-import penguin_1_1 from './assets/penguin_1_1.png'
-import penguin_1_2 from './assets/penguin_1_2.png'
-import penguin_1_3 from './assets/penguin_1_3.png'
-
-type GameState = {
-  playerName: string
-  cards: number[]
-  matchedIndices: number[]
-  score: number
-  moves: number
-  finished: boolean
-}
-
-type FlipResult = {
-  match: boolean
-  message: string
-  firstIndex: number
-  secondIndex: number
-  firstValue: number
-  secondValue: number
-  game: GameState
-}
+import GameBoard from './components/GameBoard'
+import GameHeader from './components/GameHeader'
+import Scoreboard from './components/Scoreboard'
+import type { FlipResult, GameState } from './types/game'
 
 const DEFAULT_NAME = 'Sofie'
-const penguinImages = {
-  1: penguin_0_0,
-  2: penguin_0_1,
-  3: penguin_0_2,
-  4: penguin_0_3,
-  5: penguin_1_0,
-  6: penguin_1_1,
-  7: penguin_1_2,
-  8: penguin_1_3,
-} as const
+const fallbackCards = Array.from({ length: 16 }, (_, index) => index + 1)
 
 function App() {
   const [playerName, setPlayerName] = useState(DEFAULT_NAME)
@@ -77,7 +45,7 @@ function App() {
       })
 
       if (!response.ok) {
-        setMessage('Could not start the game.')
+          setMessage('Could not start the game.')
         return
       }
 
@@ -119,7 +87,7 @@ function App() {
         setMessage(data.message)
       } else {
         setIsRevealingMismatch(true)
-        setMessage(`${data.message} Flipping back in 4 seconds.`)
+        setMessage(`${data.message} Flipping back in 1 second.`)
         revealTimeoutRef.current = setTimeout(() => {
           setSelectedIndices([])
           setIsRevealingMismatch(false)
@@ -154,86 +122,26 @@ function App() {
     }
   }
 
-  const selectedSet = useMemo(() => new Set(selectedIndices), [selectedIndices])
-
   return (
     <main className="app-shell">
-      <section className="hero-panel">
-        <div className="hero-copy">
-          <p className="eyebrow">Penguin Memory Game</p>
-          <h1>Find all matching penguin pairs</h1>
-          <p className="lead">
-            Flip two cards at a time, remember where the penguins are, and clear the
-            board with the fewest moves.
-          </p>
-        </div>
-        <div className="controls">
-          <label className="field">
-            <span>Player name</span>
-            <input
-              value={playerName}
-              onChange={(event) => setPlayerName(event.target.value)}
-              placeholder="Enter your name"
-            />
-          </label>
-          <button className="primary-button" onClick={startGame} disabled={isBusy}>
-            {game ? 'Restart game' : 'Start game'}
-          </button>
-          <p className="status">{message}</p>
-        </div>
-      </section>
+      <GameHeader
+        playerName={playerName}
+        onPlayerNameChange={setPlayerName}
+        onStartGame={startGame}
+        isBusy={isBusy}
+        message={message}
+        hasGameStarted={Boolean(game)}
+      />
 
-      <section className="scoreboard">
-        <div>
-          <span>Score</span>
-          <strong>{game?.score ?? 0}</strong>
-        </div>
-        <div>
-          <span>Moves</span>
-          <strong>{game?.moves ?? 0}</strong>
-        </div>
-        <div>
-          <span>Matched pairs</span>
-          <strong>{game ? game.matchedIndices.length / 2 : 0}/8</strong>
-        </div>
-        <div>
-          <span>Status</span>
-          <strong>{game?.finished ? 'Completed' : 'Playing'}</strong>
-        </div>
-      </section>
+      <Scoreboard game={game} />
 
-      <section className="board-section">
-        <div className="board-header">
-          <h2>Penguin board</h2>
-          <p>Match two cards with the same penguin number.</p>
-        </div>
-
-        <div className="board">
-          {(game?.cards ?? Array.from({ length: 16 }, (_, index) => index + 1)).map(
-            (value, index) => {
-              const isMatched = matchedSet.has(index)
-              const isSelected = selectedSet.has(index)
-              const showFace = isMatched || isSelected
-
-              return (
-                <button
-                  key={index}
-                  className={`card ${showFace ? 'card--open' : ''} ${
-                    isMatched ? 'card--matched' : ''
-                  }`}
-                  onClick={() => handleCardClick(index)}
-                  disabled={!game || isBusy || isRevealingMismatch || isMatched || game.finished}
-                >
-                  <span className="card__label">{index + 1}</span>
-                  <span className="card__face">
-                    {showFace ? <img src={penguinImages[value as keyof typeof penguinImages]} alt={`Penguin ${value}`} /> : '❓'}
-                  </span>
-                </button>
-              )
-            },
-          )}
-        </div>
-      </section>
+      <GameBoard
+        cards={game?.cards ?? fallbackCards}
+        matchedIndices={game?.matchedIndices ?? []}
+        selectedIndices={selectedIndices}
+        disabled={!game || isBusy || isRevealingMismatch || Boolean(game?.finished)}
+        onCardClick={handleCardClick}
+      />
     </main>
   )
 }
