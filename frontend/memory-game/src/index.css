@@ -41,15 +41,15 @@ h2 {
 }
 
 h1 {
-  font-size: clamp(2.4rem, 4vw, 4rem);
-  letter-spacing: -1.68px;
-  margin: 0 0 16px;
+  font-size: clamp(1.5rem, 2.2vw, 2.1rem);
+  letter-spacing: -0.6px;
+  margin: 0 0 8px;
 }
 h2 {
-  font-size: 24px;
+  font-size: 20px;
   line-height: 118%;
   letter-spacing: -0.24px;
-  margin: 0 0 8px;
+  margin: 0 0 4px;
 }
 p {
   margin: 0;

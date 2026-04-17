@@ -1,9 +1,10 @@
 .app-shell {
-  min-height: 100svh;
-  padding: 32px;
+  height: 100svh;
+  padding: 16px;
   display: grid;
-  gap: 24px;
-  align-content: start;
+  gap: 12px;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  overflow: hidden;
 }
 
 .hero-panel,
@@ -11,16 +12,16 @@
 .board-section {
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid var(--border);
-  border-radius: 24px;
+  border-radius: 18px;
   box-shadow: var(--shadow);
-  padding: 24px;
+  padding: 14px;
   backdrop-filter: blur(12px);
 }
 
 .hero-panel {
   display: grid;
   grid-template-columns: 1.4fr 1fr;
-  gap: 20px;
+  gap: 12px;
   align-items: end;
 }
 
@@ -36,36 +37,37 @@
 .lead {
   max-width: 56ch;
   color: var(--text);
+  font-size: 14px;
 }
 
 .controls {
   display: grid;
-  gap: 12px;
+  gap: 8px;
   justify-items: stretch;
 }
 
 .field {
   display: grid;
-  gap: 8px;
+  gap: 4px;
   text-align: left;
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text-h);
 }
 
 .field input {
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px 16px;
+  border-radius: 10px;
+  padding: 8px 10px;
   font: inherit;
   background: white;
 }
 
 .primary-button {
   border: none;
-  border-radius: 14px;
-  padding: 14px 16px;
+  border-radius: 10px;
+  padding: 8px 10px;
   font: inherit;
-  font-weight: 700;
+  font-weight: 600;
   color: white;
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   cursor: pointer;
@@ -79,53 +81,64 @@
 .status {
   margin: 0;
   color: var(--text);
-  min-height: 1.4em;
+  min-height: 1.2em;
+  font-size: 12px;
 }
 
 .scoreboard {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  gap: 8px;
 }
 
 .scoreboard div {
   background: rgba(245, 245, 255, 0.9);
-  border-radius: 18px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 10px;
   border: 1px solid rgba(125, 125, 255, 0.1);
 }
 
 .scoreboard span {
   display: block;
-  font-size: 13px;
+  font-size: 11px;
   color: var(--text);
 }
 
 .scoreboard strong {
   display: block;
-  margin-top: 8px;
-  font-size: 24px;
+  margin-top: 4px;
+  font-size: 18px;
   color: var(--text-h);
 }
 
 .board-header {
-  margin-bottom: 16px;
+  margin-bottom: 8px;
 }
 
 .board-header p {
   color: var(--text);
+  font-size: 13px;
+}
+
+.board-section {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .board {
+  flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-rows: repeat(4, minmax(0, 1fr));
+  gap: 8px;
 }
 
 .card {
-  aspect-ratio: 1;
+  min-height: 0;
   border: 1px solid var(--border);
-  border-radius: 18px;
+  border-radius: 12px;
   background: linear-gradient(180deg, #fff, #f4f7ff);
   display: grid;
   place-items: center;
@@ -156,19 +169,22 @@
 }
 
 .card__label {
-  font-size: 12px;
+  font-size: 10px;
   color: var(--text);
 }
 
 .card__face {
-  font-size: 28px;
+  font-size: clamp(16px, 2vw, 24px);
   font-weight: 700;
   color: var(--text-h);
 }
 
 @media (max-width: 900px) {
   .app-shell {
-    padding: 20px;
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+    padding: 12px;
   }
 
   .hero-panel,
@@ -179,5 +195,13 @@
   .scoreboard,
   .board {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .board {
+    grid-template-rows: none;
+  }
+
+  .card {
+    aspect-ratio: 1;
   }
 }
