@@ -1,5 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import './App.css'
+import penguin_0_0 from './assets/penguin_0_0.png'
+import penguin_0_1 from './assets/penguin_0_1.png'
+import penguin_0_2 from './assets/penguin_0_2.png'
+import penguin_0_3 from './assets/penguin_0_3.png'
+import penguin_1_0 from './assets/penguin_1_0.png'
+import penguin_1_1 from './assets/penguin_1_1.png'
+import penguin_1_2 from './assets/penguin_1_2.png'
+import penguin_1_3 from './assets/penguin_1_3.png'
 
 type GameState = {
   playerName: string
@@ -21,15 +29,36 @@ type FlipResult = {
 }
 
 const DEFAULT_NAME = 'Sofie'
+const penguinImages = {
+  1: penguin_0_0,
+  2: penguin_0_1,
+  3: penguin_0_2,
+  4: penguin_0_3,
+  5: penguin_1_0,
+  6: penguin_1_1,
+  7: penguin_1_2,
+  8: penguin_1_3,
+} as const
 
 function App() {
   const [playerName, setPlayerName] = useState(DEFAULT_NAME)
   const [game, setGame] = useState<GameState | null>(null)
   const [selectedIndices, setSelectedIndices] = useState<number[]>([])
+  const [isRevealingMismatch, setIsRevealingMismatch] = useState(false)
   const [message, setMessage] = useState('Start a game to begin matching penguins.')
   const [isBusy, setIsBusy] = useState(false)
+  const revealTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const matchedSet = useMemo(() => new Set(game?.matchedIndices ?? []), [game])
+
+  function clearRevealTimeout() {
+    if (revealTimeoutRef.current) {
+      clearTimeout(revealTimeoutRef.current)
+      revealTimeoutRef.current = null
+    }
+  }
+
+  useEffect(() => clearRevealTimeout, [])
 
   async function startGame() {
     const trimmedName = playerName.trim()
@@ -38,6 +67,9 @@ function App() {
       return
     }
 
+    clearRevealTimeout()
+    setSelectedIndices([])
+    setIsRevealingMismatch(false)
     setIsBusy(true)
     try {
       const response = await fetch(`/game/${encodeURIComponent(trimmedName)}`, {
@@ -63,6 +95,7 @@ function App() {
   async function flipCards(firstIndex: number, secondIndex: number) {
     if (!game) return
 
+    clearRevealTimeout()
     setIsBusy(true)
     try {
       const response = await fetch(`/game/${encodeURIComponent(game.playerName)}/flip`, {
@@ -80,18 +113,30 @@ function App() {
 
       const data = (await response.json()) as FlipResult
       setGame(data.game)
-      setSelectedIndices([])
-      setMessage(data.message)
+      if (data.match) {
+        setSelectedIndices([])
+        setIsRevealingMismatch(false)
+        setMessage(data.message)
+      } else {
+        setIsRevealingMismatch(true)
+        setMessage(`${data.message} Flipping back in 4 seconds.`)
+        revealTimeoutRef.current = setTimeout(() => {
+          setSelectedIndices([])
+          setIsRevealingMismatch(false)
+          revealTimeoutRef.current = null
+        }, 1000)
+      }
     } catch {
       setMessage('Could not reach the backend.')
       setSelectedIndices([])
+      setIsRevealingMismatch(false)
     } finally {
       setIsBusy(false)
     }
   }
 
   function handleCardClick(index: number) {
-    if (!game || isBusy || game.finished || matchedSet.has(index)) {
+    if (!game || isBusy || isRevealingMismatch || game.finished || matchedSet.has(index)) {
       return
     }
 
@@ -177,10 +222,12 @@ function App() {
                     isMatched ? 'card--matched' : ''
                   }`}
                   onClick={() => handleCardClick(index)}
-                  disabled={!game || isBusy || isMatched || game.finished}
+                  disabled={!game || isBusy || isRevealingMismatch || isMatched || game.finished}
                 >
                   <span className="card__label">{index + 1}</span>
-                  <span className="card__face">{showFace ? `🐧 ${value}` : '❓'}</span>
+                  <span className="card__face">
+                    {showFace ? <img src={penguinImages[value as keyof typeof penguinImages]} alt={`Penguin ${value}`} /> : '❓'}
+                  </span>
                 </button>
               )
             },
